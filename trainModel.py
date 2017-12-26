@@ -13,12 +13,13 @@ from cleanData import *
 
 df = pd.read_csv(".\\data\\train.csv")
 df = drop_fill(df)
-df = read_Dictionary_replace(df)
+df = create_Tools_Dictionary(df)
 
 df, date0 = findColumns(df, 1e15, 1e16)
 df, date1 = findColumns(df, 2e13, 1e14)
 df, date2 = findColumns(df, 20170000, 20180000)
 df, zero_std_cols = dropCharacter(df)
+df, class_cols = create_NumClass_Dictionary(df)
 print(df.shape)
 """
 纪录删除掉的列
@@ -28,6 +29,10 @@ date1.extend(date2)
 date0.extend(date1)
 delcols = sorted(np.array(date0))
 np.savetxt('delcols.txt', delcols, delimiter=',', fmt="%s")
+"""
+记录只有固定几个值的列
+"""
+np.savetxt('class_cols.txt', class_cols, delimiter=',', fmt="%s")
 
 X = np.array(df.drop(['Y'], 1))
 y = np.array(df['Y'])

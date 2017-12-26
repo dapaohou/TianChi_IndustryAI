@@ -19,7 +19,7 @@ toolCSV = {'TOOL_ID': 'TOOL_ID', 'TOOL_ID (#1)': 'TOOL_ID (#1)', 'TOOL_ID (#2)':
            'Tool (#1)': 'Tool (#1)_num', 'tool': 'tool_num', 'Tool (#3)': 'Tool (#3)_num'}
 
 
-def create_Dictionary_replace(df):
+def create_Tools_Dictionary(df):
     columns = df.columns.values
     for column in columns:
         text_digit_vals = {}
@@ -27,7 +27,7 @@ def create_Dictionary_replace(df):
         def convert_to_int(val):
             return text_digit_vals[val]
 
-        if df[column].dtype != np.int64 and df[column].dtype != np.float64:
+        if column in toolCSV:
             column_contents = df[column].values.tolist()
             unique_elements = set(column_contents)
             x = 0
@@ -41,7 +41,7 @@ def create_Dictionary_replace(df):
     return df
 
 
-def read_Dictionary_replace(df):
+def read_Tools_Dictionary(df):
     columns = df.columns.values
     for column in columns:
         text_digit_vals = {}
@@ -49,7 +49,7 @@ def read_Dictionary_replace(df):
         def convert_to_int(val):
             return text_digit_vals[val]
 
-        if df[column].dtype != np.int64 and df[column].dtype != np.float64:
+        if column in toolCSV:
             tempdf = pd.read_csv(".\\toolCSV\\%s.csv" % (toolCSV[column]))
             text_digit_vals = tempdf.to_dict('index')[0]
             # print(text_digit_vals)
@@ -57,10 +57,46 @@ def read_Dictionary_replace(df):
     return df
 
 
+def create_unique_Dictionary(unique_elements):
+    x = 0
+    text_digit_vals = {}
+    for unique in unique_elements:
+        if unique not in text_digit_vals:
+            text_digit_vals[unique] = x
+            x += 1
+    return text_digit_vals
+
+
+def create_NumClass_Dictionary(df):
+    columns = df.columns.values
+    numClass=[]
+    for column in columns:
+        if column not in toolCSV:
+            unique_elements = sorted(set(df[column].astype(str)))
+            if len(unique_elements) < 5:
+                text_digit_vals = create_unique_Dictionary(unique_elements)
+                df[column] = list(map(lambda x: text_digit_vals[x], df[column].astype(str)))
+                tempdf = pd.DataFrame(text_digit_vals, index=[0])
+                tempdf.to_csv(".\\col_class_CSV\\%s.csv" % column)
+                numClass.append(column)
+    return df, numClass
+
+
+def read_NumClass_Dictionary(df):
+    class_cols = np.loadtxt("class_cols.txt", dtype=bytes).astype(str)
+    columns = df.columns.values
+    for column in columns:
+        if column in class_cols:
+            tempdf = pd.read_csv(".\\col_class_CSV\\%s.csv" % column)
+            text_digit_vals = tempdf.to_dict('index')[0]
+            df[column] = list(map(lambda x: text_digit_vals[x], df[column].astype(str)))
+    return df
+
+
 def drop_fill(df):
     df.drop(['ID'], 1, inplace=True)
     df.replace(0, np.nan, inplace=True)
-    df.fillna(df.mean(), inplace=True)
+    df.fillna(df.median(), inplace=True)
     df.fillna(0, inplace=True)  # 先用均值填充NaN,如果还有NaN说明该列全为零，用0填充，让后面删掉
     return df
 
@@ -75,11 +111,9 @@ def dropCharacter(df):
     headers = df.columns.values
     zero_std_cols = []
     for index in range(len(stdcols)):
-        if stdcols[index] <= 1e-8:
+        if stdcols[index] <= 1e-14:
             zero_std_cols.append(headers[index])
     df.drop(zero_std_cols, 1, inplace=True)
-    watchcols = pd.DataFrame([stdcols], columns=headers)
-    watchcols2 = pd.DataFrame([range(len(stdcols))], columns=headers)
     return df, zero_std_cols
 
 

@@ -3,7 +3,7 @@ from cleanData import *
 df = pd.read_csv(".\\data\\testA.csv")
 out = df[['ID', 'TOOL_ID']]
 df = drop_fill(df)
-df = read_Dictionary_replace(df)
+df = read_Tools_Dictionary(df)
 delcols = np.loadtxt("delcols.txt", dtype=bytes).astype(str)
 df.drop(delcols, 1, inplace=True)
 
