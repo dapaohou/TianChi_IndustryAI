@@ -1,19 +1,19 @@
 from cleanData import *
 
 df = pd.read_csv(".\\data\\testA.csv")
-out = df[['ID', 'TOOL_ID']]
+out = df[['ID']]
 df = drop_fill(df)
 df = read_Tools_Dictionary(df)
-delcols = np.loadtxt("delcols.txt", dtype=bytes).astype(str)
+delcols = np.loadtxt(".\\data\\delcols.txt", dtype=bytes).astype(str)
 df.drop(delcols, 1, inplace=True)
 
 X = np.array(df.values)
-X = scale_load(X)
 print(X.shape)
+X = scale_load(X)
 
-model = joblib.load("GBR_model.m")
+model = joblib.load(".\\model\\DecisionTree.m")
 y = model.predict(X)
 # print(y[0:20])
 out['y'] = y
 print('out', out)
-out.to_csv('026A_GBR.csv')
+out.to_csv('.\\result\\114A_GBR.csv')

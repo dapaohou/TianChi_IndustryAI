@@ -1,6 +1,3 @@
-import matplotlib.pyplot as plt
-from matplotlib import style
-style.use('ggplot')
 import numpy as np
 import pandas as pd
 from sklearn import preprocessing
@@ -15,8 +12,8 @@ from sklearn.externals import joblib
 toolCSV = {'TOOL_ID': 'TOOL_ID', 'TOOL_ID (#1)': 'TOOL_ID (#1)', 'TOOL_ID (#2)': 'TOOL_ID (#2)',
            'TOOL_ID (#3)': 'TOOL_ID (#3)',
            'TOOL': 'TOOL', 'TOOL (#1)': 'TOOL (#1)', 'TOOL (#2)': 'TOOL (#2)',
-           'Tool': 'Tool_small', 'Tool (#2)': 'Tool (#2)_small', 'tool (#1)': 'tool (#1)_small',
-           'Tool (#1)': 'Tool (#1)_num', 'tool': 'tool_num', 'Tool (#3)': 'Tool (#3)_num'}
+           'Tool': 'Tool_small', 'Tool (#2)': 'Tool (#2)_small', 'tool (#1)': 'tool (#1)_small'}
+           # 'Tool (#1)': 'Tool (#1)_num', 'tool': 'tool_num', 'Tool (#3)': 'Tool (#3)_num'}
 
 
 def create_Tools_Dictionary(df):
@@ -52,7 +49,7 @@ def read_Tools_Dictionary(df):
         if column in toolCSV:
             tempdf = pd.read_csv(".\\toolCSV\\%s.csv" % (toolCSV[column]))
             text_digit_vals = tempdf.to_dict('index')[0]
-            # print(text_digit_vals)
+            print(text_digit_vals)
             df[column] = list(map(convert_to_int, df[column]))
     return df
 
@@ -159,12 +156,12 @@ def scale_train(x):
 
     scaler = preprocessing.StandardScaler().fit(x)
     scaled_x = scaler.transform(x)
-    joblib.dump(scaler, "scaler.save")
+    joblib.dump(scaler, ".\\model\\scaler.save")
     return scaled_x
 
 
 def scale_load(x):
-    scaler = joblib.load("scaler.save")
+    scaler = joblib.load(".\\model\\scaler.save")
     scaled_x = scaler.transform(x)
     return scaled_x
 

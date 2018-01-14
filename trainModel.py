@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import BayesianRidge, ElasticNet  # 批量导入要实现的回归算法
+from sklearn.linear_model import LassoCV, ElasticNet  # 批量导入要实现的回归算法
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.svm import SVR  # SVM中的回归算法
 from sklearn.ensemble.gradient_boosting import GradientBoostingRegressor  # 集成算法
@@ -28,11 +28,11 @@ date2.extend(zero_std_cols)
 date1.extend(date2)
 date0.extend(date1)
 delcols = sorted(np.array(date0))
-np.savetxt('delcols.txt', delcols, delimiter=',', fmt="%s")
+np.savetxt('.\\data\\delcols.txt', delcols, delimiter=',', fmt="%s")
 """
 记录只有固定几个值的列
 """
-np.savetxt('class_cols.txt', class_cols, delimiter=',', fmt="%s")
+np.savetxt('.\\data\\class_cols.txt', class_cols, delimiter=',', fmt="%s")
 
 X = np.array(df.drop(['Y'], 1))
 y = np.array(df['Y'])
@@ -41,15 +41,15 @@ X = scale_train(X)
 
 # 训练回归模型
 n_folds = 6  # 设置交叉检验的次数
-model_br = BayesianRidge()  # 建立贝叶斯岭回归模型对象
+model_br = LassoCV(normalize=False, n_jobs=-1, n_alphas=300, tol=0.001)
 model_tree = DecisionTreeRegressor(max_depth=4)  # 建立决策树模型对象
-model_etc = ElasticNet()  # 建立弹性网络回归模型对象
+model_etc = ElasticNet(l1_ratio=0.5)  # 建立弹性网络回归模型对象
 model_svr = SVR(kernel='rbf', C=1e3, gamma=0.1)  # 建立支持向量机回归模型对象
 model_gbr = GradientBoostingRegressor()  # 建立梯度增强回归模型对象
-model_names = ['BayesianRidge', 'DecisionTree', 'ElasticNet', 'SVR', 'GBR']  # 不同模型的名称列表
+model_names = ['LassoCV', 'DecisionTree', 'ElasticNet', 'SVR', 'GBR']  # 不同模型的名称列表
 model_dic = [model_br, model_tree, model_etc, model_svr, model_gbr]  # 不同回归模型对象的集合
 
-isTest = True
+isTest = False
 viewAll = False
 if viewAll:
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
@@ -87,27 +87,12 @@ elif isTest:
         MSE = mean_squared_error(model_gbr.predict(X_test), y_test)
         print("MSE:", MSE)
 else:
-    model_gbr.fit(X, y)
-    joblib.dump(model_gbr, "GBR_model.m")
-# if isTest:
-#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-#     model.fit(X_train,y_train)
-#     y_predict = model.predict(X_test)
-#     MSE = calculate_mse(y_predict,y_test)
-#     print('MES:', MSE)
-#
-# else:
-#     model.fit(X, y)
-#     joblib.dump(model, "DecisionTreeRegressor_model.m")
+    modelindex = 0
+    for model in model_dic:
+        model.fit(X, y)
+        joblib.dump(model, ".\\model\\" + model_names[modelindex] + ".m")
+        modelindex += 1
 
-# if isTest:
-#     clf = svm.SVR(kernel='rbf', C=1e3, gamma=0.1)
-#     clf.fit(X_train, y_train)
-#     y_predict = model.predict(X_test)
-#     MSE = calculate_mse(y_predict,y_test)
-#     print('MES:', MSE)
-# else:
-#     clf = svm.SVR(kernel='rbf', C=1e3, gamma=0.1)
-#     model.fit(X, y)
-#     joblib.dump(clf, "SVR_model.m")
-#
+    # model_gbr.fit(X, y)
+    # joblib.dump(model_gbr, "GBR_model.m")
+
