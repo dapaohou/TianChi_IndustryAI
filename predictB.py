@@ -11,9 +11,9 @@ X = np.array(df.values)
 print(X.shape)
 X = scale_load(X)
 
-model = joblib.load(".\\model\\DecisionTree.m")
+model = joblib.load(".\\model\\GBR.m")
 y = model.predict(X)
 # print(y[0:20])
 out['y'] = y
 print('out', out)
-out.to_csv('.\\result\\114B_GBR.csv')
+out.to_csv('.\\result\\116B_GBR.csv')
